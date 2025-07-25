@@ -8,10 +8,10 @@
         @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Open+Sans:wght@300;400;500&display=swap');
         
         :root {
-            --primary-color: #ff7eb9;
-            --secondary-color: #ff65a3;
-            --light-pink: #ffd6e7;
-            --lighter-pink: #fff0f7;
+            --primary-color: #0077cc;
+            --secondary-color: #005fa3;
+            --light-blue: #d6e9ff;
+            --lighter-blue: #f0f7ff;
             --white: #ffffff;
             --gray: #555555;
             --light-gray: #eeeeee;
@@ -19,7 +19,7 @@
         
         body {
             font-family: 'Open Sans', sans-serif;
-            background-color: var(--lighter-pink);
+            background-color: var(--lighter-blue);
             color: var(--gray);
             margin: 0;
             padding: 20px;
@@ -71,7 +71,7 @@
             transition: all 0.3s ease;
             position: relative;
             border-left: 4px solid var(--primary-color);
-            background-color: var(--light-pink);
+            background-color: var(--light-blue);
         }
         
         .course:hover {
@@ -80,9 +80,8 @@
         }
         
         .course.approved {
-            background-color: #d4edda;
-            border-left-color: #28a745;
-            opacity: 0.8;
+            background-color: #d4edff;
+            border-left-color: #0077cc;
         }
         
         .course.locked {
@@ -154,56 +153,75 @@
             background-color: var(--primary-color);
         }
         
-        .progress-tab {
+        /* Panel de progreso */
+        .progress-panel {
             position: fixed;
-            top: 20px;
+            bottom: 20px;
             right: 20px;
+            width: 300px;
             background-color: var(--white);
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 15px;
-            width: 250px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             z-index: 100;
+            transition: all 0.3s ease;
         }
         
-        .progress-title {
-            font-family: 'EB Garamond', serif;
-            color: var(--secondary-color);
-            font-size: 1.2rem;
-            margin-bottom: 10px;
-            text-align: center;
-            font-weight: 500;
+        .progress-header {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
         }
         
-        .progress-bar-container {
-            width: 100%;
-            height: 20px;
-            background-color: var(--light-gray);
-            border-radius: 10px;
+        .progress-content {
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .progress-item {
             margin-bottom: 10px;
-            overflow: hidden;
         }
         
         .progress-bar {
-            height: 100%;
-            background-color: var(--secondary-color);
+            height: 20px;
+            background-color: var(--light-gray);
             border-radius: 10px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-color);
             transition: width 0.5s ease;
         }
         
-        .progress-details {
-            font-size: 0.9rem;
-            text-align: center;
-        }
-        
-        .progress-details div {
-            margin-bottom: 5px;
-        }
-        
         .progress-percentage {
+            text-align: right;
+            margin-top: 5px;
             font-weight: bold;
-            font-size: 1.1rem;
-            color: var(--secondary-color);
+        }
+        
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        
+        .progress-panel.minimized {
+            height: 40px;
+            overflow: hidden;
+        }
+        
+        .progress-panel.minimized .progress-content {
+            display: none;
         }
         
         @media (max-width: 768px) {
@@ -216,27 +234,15 @@
                 width: 90%;
             }
             
-            .progress-tab {
-                position: static;
+            .progress-panel {
                 width: 90%;
-                margin: 0 auto 20px;
+                left: 5%;
+                right: auto;
             }
         }
     </style>
 </head>
 <body>
-    <div class="progress-tab">
-        <div class="progress-title">Progreso de la Carrera</div>
-        <div class="progress-bar-container">
-            <div class="progress-bar" id="progress-bar"></div>
-        </div>
-        <div class="progress-details">
-            <div><span class="progress-percentage" id="progress-percentage">0%</span> completado</div>
-            <div id="credits-completed">0 créditos aprobados</div>
-            <div id="credits-total">de 110 créditos totales</div>
-        </div>
-    </div>
-    
     <h1>Matemáticas Aplicadas y Ciencias de la Computación</h1>
     
     <div class="container" id="curriculum-container">
@@ -244,6 +250,30 @@
     </div>
     
     <button class="reset-btn" id="reset-btn">Reiniciar Progreso</button>
+    
+    <!-- Panel de progreso -->
+    <div class="progress-panel" id="progress-panel">
+        <div class="progress-header" id="progress-header">
+            <h3>Progreso de la Carrera</h3>
+            <button class="toggle-btn" id="toggle-btn">−</button>
+        </div>
+        <div class="progress-content" id="progress-content">
+            <div class="progress-item">
+                <div>Materias aprobadas</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="courses-progress"></div>
+                </div>
+                <div class="progress-percentage" id="courses-percentage">0% (0/0)</div>
+            </div>
+            <div class="progress-item">
+                <div>Créditos aprobados</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="credits-progress"></div>
+                </div>
+                <div class="progress-percentage" id="credits-percentage">0% (0/0)</div>
+            </div>
+        </div>
+    </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -346,41 +376,57 @@
                             { code: "85", name: "Trabajo de grado 2", credits: 3, prerequisites: ["75"] }
                         ]
                     }
-                ],
-                totalCredits: 110 // Total de créditos de la carrera
+                ]
             };
             
             // Obtener elementos del DOM
             const container = document.getElementById('curriculum-container');
-            const progressBar = document.getElementById('progress-bar');
-            const progressPercentage = document.getElementById('progress-percentage');
-            const creditsCompleted = document.getElementById('credits-completed');
-            const creditsTotal = document.getElementById('credits-total');
+            const progressPanel = document.getElementById('progress-panel');
+            const progressHeader = document.getElementById('progress-header');
+            const toggleBtn = document.getElementById('toggle-btn');
+            const coursesProgress = document.getElementById('courses-progress');
+            const coursesPercentage = document.getElementById('courses-percentage');
+            const creditsProgress = document.getElementById('credits-progress');
+            const creditsPercentage = document.getElementById('credits-percentage');
             
             // Cargar el estado guardado o inicializar uno nuevo
             let approvedCourses = JSON.parse(localStorage.getItem('approvedCourses')) || [];
             
-            // Función para calcular el progreso
-            function calculateProgress() {
-                let totalApprovedCredits = 0;
+            // Calcular estadísticas totales
+            function calculateTotals() {
+                let totalCourses = 0;
+                let totalCredits = 0;
                 
-                // Calcular créditos aprobados
                 curriculum.semesters.forEach(semester => {
+                    totalCourses += semester.courses.length;
                     semester.courses.forEach(course => {
-                        if (approvedCourses.includes(course.code)) {
-                            totalApprovedCredits += course.credits;
-                        }
+                        totalCredits += course.credits;
                     });
                 });
                 
-                // Calcular porcentaje
-                const percentage = Math.round((totalApprovedCredits / curriculum.totalCredits) * 100);
+                return { totalCourses, totalCredits };
+            }
+            
+            // Actualizar el panel de progreso
+            function updateProgressPanel() {
+                const { totalCourses, totalCredits } = calculateTotals();
+                const approvedCount = approvedCourses.length;
+                const approvedCredits = approvedCourses.reduce((sum, code) => {
+                    const course = findCourseByCode(code);
+                    return sum + (course ? course.credits : 0);
+                }, 0);
                 
-                // Actualizar UI
-                progressBar.style.width = `${percentage}%`;
-                progressPercentage.textContent = `${percentage}%`;
-                creditsCompleted.textContent = `${totalApprovedCredits} créditos aprobados`;
-                creditsTotal.textContent = `de ${curriculum.totalCredits} créditos totales`;
+                // Calcular porcentajes
+                const coursesPercent = Math.round((approvedCount / totalCourses) * 100) || 0;
+                const creditsPercent = Math.round((approvedCredits / totalCredits) * 100) || 0;
+                
+                // Actualizar barras de progreso
+                coursesProgress.style.width = `${coursesPercent}%`;
+                creditsProgress.style.width = `${creditsPercent}%`;
+                
+                // Actualizar textos
+                coursesPercentage.textContent = `${coursesPercent}% (${approvedCount}/${totalCourses})`;
+                creditsPercentage.textContent = `${creditsPercent}% (${approvedCredits}/${totalCredits})`;
             }
             
             // Función para renderizar la malla curricular
@@ -445,10 +491,12 @@
                         courseElement.appendChild(courseName);
                         courseElement.appendChild(credits);
                         
-                        // Agregar evento de clic si no está bloqueado
-                        if (!isLocked && !isApproved) {
-                            courseElement.addEventListener('click', () => toggleCourseApproval(course.code));
-                        }
+                        // Agregar evento de clic
+                        courseElement.addEventListener('click', () => {
+                            if (!isLocked) {
+                                toggleCourseApproval(course.code);
+                            }
+                        });
                         
                         semesterElement.appendChild(courseElement);
                     });
@@ -456,8 +504,8 @@
                     container.appendChild(semesterElement);
                 });
                 
-                // Actualizar el progreso
-                calculateProgress();
+                // Actualizar el panel de progreso
+                updateProgressPanel();
             }
             
             // Función para encontrar un curso por su código
@@ -495,6 +543,48 @@
             
             // Configurar el botón de reinicio
             document.getElementById('reset-btn').addEventListener('click', resetProgress);
+            
+            // Configurar el panel de progreso minimizable
+            let isMinimized = false;
+            
+            toggleBtn.addEventListener('click', () => {
+                isMinimized = !isMinimized;
+                progressPanel.classList.toggle('minimized', isMinimized);
+                toggleBtn.textContent = isMinimized ? "+" : "−";
+            });
+            
+            // Hacer el panel de progreso arrastrable
+            let isDragging = false;
+            let offsetX, offsetY;
+            
+            progressHeader.addEventListener('mousedown', (e) => {
+                if (e.target === toggleBtn) return;
+                
+                isDragging = true;
+                offsetX = e.clientX - progressPanel.getBoundingClientRect().left;
+                offsetY = e.clientY - progressPanel.getBoundingClientRect().top;
+                
+                progressPanel.style.cursor = 'grabbing';
+                progressPanel.style.userSelect = 'none';
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                
+                const x = e.clientX - offsetX;
+                const y = e.clientY - offsetY;
+                
+                progressPanel.style.left = `${x}px`;
+                progressPanel.style.top = `${y}px`;
+                progressPanel.style.right = 'auto';
+                progressPanel.style.bottom = 'auto';
+            });
+            
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                progressPanel.style.cursor = '';
+                progressPanel.style.userSelect = '';
+            });
             
             // Renderizar la malla curricular inicial
             renderCurriculum();
