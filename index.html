@@ -154,6 +154,58 @@
             background-color: var(--primary-color);
         }
         
+        .progress-tab {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--white);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            width: 250px;
+            z-index: 100;
+        }
+        
+        .progress-title {
+            font-family: 'EB Garamond', serif;
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 20px;
+            background-color: var(--light-gray);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: var(--secondary-color);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-details {
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .progress-details div {
+            margin-bottom: 5px;
+        }
+        
+        .progress-percentage {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+        }
+        
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
@@ -163,10 +215,28 @@
             .semester {
                 width: 90%;
             }
+            
+            .progress-tab {
+                position: static;
+                width: 90%;
+                margin: 0 auto 20px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="progress-tab">
+        <div class="progress-title">Progreso de la Carrera</div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="progress-details">
+            <div><span class="progress-percentage" id="progress-percentage">0%</span> completado</div>
+            <div id="credits-completed">0 créditos aprobados</div>
+            <div id="credits-total">de 110 créditos totales</div>
+        </div>
+    </div>
+    
     <h1>Matemáticas Aplicadas y Ciencias de la Computación</h1>
     
     <div class="container" id="curriculum-container">
@@ -276,14 +346,42 @@
                             { code: "85", name: "Trabajo de grado 2", credits: 3, prerequisites: ["75"] }
                         ]
                     }
-                ]
+                ],
+                totalCredits: 110 // Total de créditos de la carrera
             };
             
-            // Obtener el contenedor de la malla curricular
+            // Obtener elementos del DOM
             const container = document.getElementById('curriculum-container');
+            const progressBar = document.getElementById('progress-bar');
+            const progressPercentage = document.getElementById('progress-percentage');
+            const creditsCompleted = document.getElementById('credits-completed');
+            const creditsTotal = document.getElementById('credits-total');
             
             // Cargar el estado guardado o inicializar uno nuevo
             let approvedCourses = JSON.parse(localStorage.getItem('approvedCourses')) || [];
+            
+            // Función para calcular el progreso
+            function calculateProgress() {
+                let totalApprovedCredits = 0;
+                
+                // Calcular créditos aprobados
+                curriculum.semesters.forEach(semester => {
+                    semester.courses.forEach(course => {
+                        if (approvedCourses.includes(course.code)) {
+                            totalApprovedCredits += course.credits;
+                        }
+                    });
+                });
+                
+                // Calcular porcentaje
+                const percentage = Math.round((totalApprovedCredits / curriculum.totalCredits) * 100);
+                
+                // Actualizar UI
+                progressBar.style.width = `${percentage}%`;
+                progressPercentage.textContent = `${percentage}%`;
+                creditsCompleted.textContent = `${totalApprovedCredits} créditos aprobados`;
+                creditsTotal.textContent = `de ${curriculum.totalCredits} créditos totales`;
+            }
             
             // Función para renderizar la malla curricular
             function renderCurriculum() {
@@ -357,6 +455,9 @@
                     
                     container.appendChild(semesterElement);
                 });
+                
+                // Actualizar el progreso
+                calculateProgress();
             }
             
             // Función para encontrar un curso por su código
